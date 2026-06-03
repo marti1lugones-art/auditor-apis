@@ -2,6 +2,8 @@
 
 Sistema de monitoreo que chequea APIs REST de forma automática y detecta problemas en tres dimensiones: disponibilidad, cambios de contrato, y violaciones de reglas. Guarda histórico en SQLite y lo presenta en un dashboard visual interactivo.
 
+![Dashboard de monitoreo](docs/dashboard.png)
+
 ---
 
 ## El problema que resuelve

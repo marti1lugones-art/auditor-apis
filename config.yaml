@@ -1,5 +1,6 @@
 settings:
   timeout_seconds: 10
+  check_interval_minutes: 5
 
 endpoints:
   # ── ReqRes ────────────────────────────────────────────────────

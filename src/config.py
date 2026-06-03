@@ -23,7 +23,8 @@ class EndpointConfig:
 
 @dataclass
 class Settings:
-    timeout_seconds: float = 10.0
+    timeout_seconds:        float = 10.0
+    check_interval_minutes: float = 5.0
 
 
 @dataclass

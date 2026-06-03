@@ -7,13 +7,18 @@ from pathlib import Path
 
 import yaml
 
+# Tipos de regla aceptados (lista cerrada del CLAUDE.md)
+_VALID_RULE_TYPES = {"status_esperado", "latencia_maxima", "campo_requerido", "formato_campo"}
+_VALID_FORMATS    = {"email", "no_vacio", "es_numero"}
+
 
 @dataclass
 class EndpointConfig:
     name: str
     method: str
     url: str
-    expected_status: int | None = None  # None = sin expectativa explícita
+    expected_status: int | None = None
+    rules: list[dict] = field(default_factory=list)  # None = sin expectativa explícita
 
 
 @dataclass
@@ -75,11 +80,40 @@ def load_config(path: str | Path = "config.yaml") -> Config:
                     f"recibido: {expected!r}"
                 )
 
+        # ── Reglas ────────────────────────────────────────────────────────────
+        raw_rules = ep.get("rules", [])
+        for j, rule in enumerate(raw_rules, 1):
+            rtype = rule.get("type")
+            ep_label = ep["name"]
+            if not rtype:
+                raise ValueError(f"Endpoint '{ep_label}' regla #{j}: falta 'type'")
+            if rtype not in _VALID_RULE_TYPES:
+                raise ValueError(
+                    f"Endpoint '{ep_label}' regla #{j}: tipo '{rtype}' no reconocido. "
+                    f"Válidos: {sorted(_VALID_RULE_TYPES)}"
+                )
+            if rtype == "status_esperado" and "valor" not in rule:
+                raise ValueError(f"Endpoint '{ep_label}' regla status_esperado: falta 'valor'")
+            if rtype == "latencia_maxima" and "ms" not in rule:
+                raise ValueError(f"Endpoint '{ep_label}' regla latencia_maxima: falta 'ms'")
+            if rtype in ("campo_requerido", "formato_campo") and "campo" not in rule:
+                raise ValueError(f"Endpoint '{ep_label}' regla {rtype}: falta 'campo'")
+            if rtype == "formato_campo":
+                fmt = rule.get("formato")
+                if not fmt:
+                    raise ValueError(f"Endpoint '{ep_label}' regla formato_campo: falta 'formato'")
+                if fmt not in _VALID_FORMATS:
+                    raise ValueError(
+                        f"Endpoint '{ep_label}' regla formato_campo: "
+                        f"formato '{fmt}' no reconocido. Válidos: {sorted(_VALID_FORMATS)}"
+                    )
+
         endpoints.append(EndpointConfig(
             name=ep["name"],
             method=ep.get("method", "GET").upper().strip(),
             url=ep["url"].strip(),
             expected_status=expected,
+            rules=raw_rules,
         ))
 
     return Config(settings=settings, endpoints=endpoints)

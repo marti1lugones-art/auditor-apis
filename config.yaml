@@ -7,16 +7,25 @@ endpoints:
     method: GET
     url: "https://reqres.in/api/users"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200      # ❌ violará: la API ahora devuelve 401
 
   - name: "ReqRes - Usuario por ID"
     method: GET
     url: "https://reqres.in/api/users/2"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200      # ❌ violará: 401
 
   - name: "ReqRes - Usuario inexistente"
     method: GET
     url: "https://reqres.in/api/users/999"
-    expected_status: 404       # sabemos que debe ser 404
+    expected_status: 404
+    rules:
+      - type: status_esperado
+        valor: 404      # también esperamos 404 aquí; sigue violando (401)
 
   - name: "ReqRes - Lista de recursos"
     method: GET
@@ -28,39 +37,100 @@ endpoints:
     method: GET
     url: "https://jsonplaceholder.typicode.com/posts"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: latencia_maxima
+        ms: 600
+      - type: campo_requerido
+        campo: id
+      - type: campo_requerido
+        campo: title
+      - type: campo_requerido
+        campo: body
 
   - name: "JSONPlaceholder - Post por ID"
     method: GET
     url: "https://jsonplaceholder.typicode.com/posts/1"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: campo_requerido
+        campo: id
+      - type: campo_requerido
+        campo: body
+      - type: campo_requerido
+        campo: userId
 
   - name: "JSONPlaceholder - Usuarios"
     method: GET
     url: "https://jsonplaceholder.typicode.com/users"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: latencia_maxima
+        ms: 500
+      - type: campo_requerido
+        campo: email
+      - type: formato_campo
+        campo: email
+        formato: email
+      - type: campo_requerido
+        campo: username
 
   - name: "JSONPlaceholder - Post inexistente"
     method: GET
     url: "https://jsonplaceholder.typicode.com/posts/99999"
-    expected_status: 404       # JSONPlaceholder devuelve 404 para IDs que no existen
+    expected_status: 404
+    rules:
+      - type: status_esperado
+        valor: 404
 
-  # Sin expected_status — monitoreo sin expectativa explícita
   - name: "JSONPlaceholder - Comentarios de post"
     method: GET
     url: "https://jsonplaceholder.typicode.com/posts/1/comments"
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: campo_requerido
+        campo: email
+      - type: formato_campo
+        campo: email
+        formato: email
 
-  # ── REST Countries (API sana, sin auth) ───────────────────────
+  # ── REST Countries ─────────────────────────────────────────────
   - name: "REST Countries - Argentina"
     method: GET
     url: "https://restcountries.com/v3.1/name/argentina"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: campo_requerido
+        campo: name.common       # campo anidado: item["name"]["common"]
+      - type: campo_requerido
+        campo: population
+      - type: latencia_maxima
+        ms: 1500
 
   - name: "REST Countries - Brasil"
     method: GET
     url: "https://restcountries.com/v3.1/alpha/br"
     expected_status: 200
+    rules:
+      - type: status_esperado
+        valor: 200
+      - type: campo_requerido
+        campo: name.common
+      - type: campo_requerido
+        campo: population
 
   - name: "REST Countries - País inexistente"
     method: GET
     url: "https://restcountries.com/v3.1/name/zzzznotacountry"
     expected_status: 404
+    rules:
+      - type: status_esperado
+        valor: 404

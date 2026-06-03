@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from checker import CheckResult
     from schema_comparator import SchemaChange
+    from rules import RuleViolation
 
 DB_PATH = Path(__file__).parent.parent / "auditor.db"
 
@@ -61,6 +62,21 @@ CREATE TABLE IF NOT EXISTS schema_changes (
 )
 """
 
+_CREATE_RULE_VIOLATIONS = """
+CREATE TABLE IF NOT EXISTS rule_violations (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    check_id        INTEGER NOT NULL,    -- FK → checks.id
+    endpoint_name   TEXT    NOT NULL,
+    detected_at     TEXT    NOT NULL,    -- ISO 8601
+    rule_type       TEXT    NOT NULL,    -- "status_esperado" | "latencia_maxima" | ...
+    campo           TEXT,               -- NULL para status_esperado / latencia_maxima
+    formato         TEXT,               -- solo para formato_campo
+    descripcion     TEXT    NOT NULL,
+    valor_esperado  TEXT    NOT NULL,
+    valor_actual    TEXT    NOT NULL
+)
+"""
+
 
 # ── Init ──────────────────────────────────────────────────────────────────────
 
@@ -70,6 +86,7 @@ def init_db(db_path: str | Path = DB_PATH) -> sqlite3.Connection:
     conn.execute(_CREATE_CHECKS)
     conn.execute(_CREATE_SCHEMAS)
     conn.execute(_CREATE_SCHEMA_CHANGES)
+    conn.execute(_CREATE_RULE_VIOLATIONS)
     conn.commit()
     return conn
 
@@ -173,6 +190,38 @@ def save_schema_change(
             change.description,
             change.baseline_type,
             change.current_type,
+        ),
+    )
+    conn.commit()
+
+
+# ── Rule violations ───────────────────────────────────────────────────────────
+
+def save_rule_violation(
+    conn: sqlite3.Connection,
+    check_id: int,
+    endpoint_name: str,
+    detected_at: str,
+    violation: "RuleViolation",
+) -> None:
+    """Guarda una violación de regla asociada a un check."""
+    conn.execute(
+        """
+        INSERT INTO rule_violations
+            (check_id, endpoint_name, detected_at, rule_type,
+             campo, formato, descripcion, valor_esperado, valor_actual)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            check_id,
+            endpoint_name,
+            detected_at,
+            violation.rule_type,
+            violation.campo,
+            violation.formato,
+            violation.descripcion,
+            violation.valor_esperado,
+            violation.valor_actual,
         ),
     )
     conn.commit()

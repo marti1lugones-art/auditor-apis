@@ -1,0 +1,50 @@
+settings:
+  timeout_seconds: 10
+
+endpoints:
+  # ── ReqRes ────────────────────────────────────────────────────
+  - name: "ReqRes - Lista de usuarios"
+    method: GET
+    url: "https://reqres.in/api/users"
+    expected_status: 200
+
+  - name: "ReqRes - Usuario por ID"
+    method: GET
+    url: "https://reqres.in/api/users/2"
+    expected_status: 200
+
+  - name: "ReqRes - Usuario inexistente"
+    method: GET
+    url: "https://reqres.in/api/users/999"
+    expected_status: 404       # sabemos que debe ser 404
+
+  - name: "ReqRes - Lista de recursos"
+    method: GET
+    url: "https://reqres.in/api/unknown"
+    expected_status: 200
+
+  # ── JSONPlaceholder ────────────────────────────────────────────
+  - name: "JSONPlaceholder - Posts"
+    method: GET
+    url: "https://jsonplaceholder.typicode.com/posts"
+    expected_status: 200
+
+  - name: "JSONPlaceholder - Post por ID"
+    method: GET
+    url: "https://jsonplaceholder.typicode.com/posts/1"
+    expected_status: 200
+
+  - name: "JSONPlaceholder - Usuarios"
+    method: GET
+    url: "https://jsonplaceholder.typicode.com/users"
+    expected_status: 200
+
+  - name: "JSONPlaceholder - Post inexistente"
+    method: GET
+    url: "https://jsonplaceholder.typicode.com/posts/99999"
+    expected_status: 404       # JSONPlaceholder devuelve 404 para IDs que no existen
+
+  # Sin expected_status — monitoreo sin expectativa explícita
+  - name: "JSONPlaceholder - Comentarios de post"
+    method: GET
+    url: "https://jsonplaceholder.typicode.com/posts/1/comments"

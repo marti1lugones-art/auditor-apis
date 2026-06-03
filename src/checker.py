@@ -23,10 +23,11 @@ class CheckResult:
     url:             str
     checked_at:      datetime
     is_up:           bool
-    status_code:     int | None    # None si no hubo conexión
-    latency_ms:      float | None  # None si no hubo conexión
-    error:           str | None    # None si todo bien
-    expected_status: int | None    # copiado de la config, None si no se especificó
+    status_code:     int | None          # None si no hubo conexión
+    latency_ms:      float | None        # None si no hubo conexión
+    error:           str | None          # None si todo bien
+    expected_status: int | None          # copiado de la config, None si no se especificó
+    response_body:   dict | list | None = None  # JSON parseado; None si no es JSON o falló
 
 
 def check_endpoint(
@@ -54,6 +55,15 @@ def check_endpoint(
         )
         latency_ms = round((time.perf_counter() - t0) * 1000, 2)
 
+        # Parsear body JSON solo si el Content-Type lo indica
+        body = None
+        content_type = response.headers.get("content-type", "")
+        if "application/json" in content_type:
+            try:
+                body = response.json()
+            except Exception:
+                pass  # body queda None; no interrumpe el chequeo
+
         return CheckResult(
             endpoint_name=name,
             method=method,
@@ -64,6 +74,7 @@ def check_endpoint(
             latency_ms=latency_ms,
             error=None,
             expected_status=expected_status,
+            response_body=body,
         )
 
     except httpx.TimeoutException:

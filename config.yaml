@@ -48,3 +48,19 @@ endpoints:
   - name: "JSONPlaceholder - Comentarios de post"
     method: GET
     url: "https://jsonplaceholder.typicode.com/posts/1/comments"
+
+  # ── REST Countries (API sana, sin auth) ───────────────────────
+  - name: "REST Countries - Argentina"
+    method: GET
+    url: "https://restcountries.com/v3.1/name/argentina"
+    expected_status: 200
+
+  - name: "REST Countries - Brasil"
+    method: GET
+    url: "https://restcountries.com/v3.1/alpha/br"
+    expected_status: 200
+
+  - name: "REST Countries - País inexistente"
+    method: GET
+    url: "https://restcountries.com/v3.1/name/zzzznotacountry"
+    expected_status: 404

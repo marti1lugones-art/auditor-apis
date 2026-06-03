@@ -1,8 +1,16 @@
+# Python
 .venv/
 __pycache__/
 *.py[cod]
+
+# Base de datos y secretos
 auditor.db
 .env
-.DS_Store
+
+# Frontend — build y caché
 node_modules/
+frontend/dist/
 frontend/.vite/
+
+# macOS
+.DS_Store
